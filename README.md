@@ -1,7 +1,7 @@
 # A/B Testing with Epsilon Greedy and Thompson Sampling
 
 ## Project Overview
-This assignment explores the implementation and comparison of two popular multi-armed bandit algorithms: Epsilon Greedy and Thompson Sampling. Multi-armed bandit problems involve a trade-off between exploration (trying different arms) and exploitation (choosing the best-known arm). These algorithms are commonly used in scenarios like online advertising, recommendation systems, and more.
+This project explores the implementation and comparison of two popular multi-armed bandit algorithms: Epsilon Greedy and Thompson Sampling. Multi-armed bandit problems involve a trade-off between exploration (trying different arms) and exploitation (choosing the best-known arm). These algorithms are commonly used in scenarios like online advertising, recommendation systems, and more.
 
 
 1. **Create a Bandit Class**: Implement a class to represent the bandit arms, which are used in both Epsilon Greedy and Thompson Sampling algorithms.
@@ -24,10 +24,7 @@ This assignment explores the implementation and comparison of two popular multi-
    - **Print Cumulative Regret**: Display the cumulative regret of each the algorithms.
 
 
-## Assignment Structure
-
-The assignment code is organized as follows:
-
+## Structure
 
 - `bandit.py`: Defines the abstract class for bandit arms, Epsilon Greedy and Thompson Sampling algorithm implementations and functions for visualizing experiment results.
 - `Report.ipynb`: A report of experiment results. 
