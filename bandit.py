@@ -51,8 +51,9 @@ class Bandit(ABC):
         p (float): The win rate of the arm.
         """
         self.p = p
-        self.p_estimate = 0.
+        self.p_estimate = 0 #estimate of average reward
         self.N = 0
+        self.r_estimate = 0 #estimate of average regret
 
     #@abstractmethod
     def __repr__(self):
@@ -119,22 +120,16 @@ class Bandit(ABC):
         data_df1.to_csv(f'{algorithm}_Final.csv', index=False)
 
         for b in range(len(bandits)):
-            print(f'Bandit with True Win Rate {bandits[b].p} - Pulled {bandits[b].N} times - Estimated average reward - {round(bandits[b].p_estimate, 4)}')
+            print(f'Bandit with True Win Rate {bandits[b].p} - Pulled {bandits[b].N} times - Estimated average reward - {round(bandits[b].p_estimate, 4)} - Estimated average regret - {round(bandits[b].r_estimate, 4)}')
             print("--------------------------------------------------")
         
         
         print(f"Cumulative Reward : {sum(reward)}")
         
-        print(f"Total Average Reward: {round(reward.mean(), 4)} ")
-        
         print(" ")
         
         print(f"Cumulative Regret : {cumulative_regret[-1]}")
               
-        #print(f"Total Average Regret: {(np.where((reward - max([b.p for b in bandits])) > 0, 0, (reward - max([b.p for b in bandits])))).mean()}")
-        
-        print(f"Total Average Regret: {round((reward - max([b.p for b in bandits])).mean(), 4)}")
-        
         print(" ")
         
         if algorithm == 'EpsilonGreedy':                            
@@ -268,6 +263,7 @@ class EpsilonGreedy(Bandit):
         """
         self.N += 1.
         self.p_estimate = (1 - 1.0/self.N) * self.p_estimate + 1.0/ self.N * x
+        self.r_estimate = self.p - self.p_estimate
 
 
     def experiment(self, BANDIT_REWARDS, N, t = 1):
@@ -307,6 +303,7 @@ class EpsilonGreedy(Bandit):
             x = bandits[j].pull()
             
             bandits[j].update(x)
+    
 
             if j != true_best:
                 count_suboptimal += 1
@@ -388,6 +385,7 @@ class ThompsonSampling(Bandit):
         self.p_estimate = (self.tau * x + self.lambda_ * self.p_estimate) / (self.tau + self.lambda_)
         self.lambda_ += self.tau
         self.N += 1
+        self.r_estimate = self.p - self.p_estimate
         
     def plot(self, bandits, trial):
         
@@ -453,8 +451,10 @@ class ThompsonSampling(Bandit):
         return cumulative_reward_average, cumulative_reward,  cumulative_regret, bandits, chosen_bandit, reward 
  
 
+
+
 def comparison(N, results_eg, results_ts):
-    # think of a way to compare the performances of the two algorithms VISUALLY and 
+    # think of a way to compare the performances of the two algorithms VISUALLY 
     
     """
     Compare performance of Epsilon Greedy and Thompson Sampling algorithms in terms of cumulative average reward.
@@ -473,10 +473,25 @@ def comparison(N, results_eg, results_ts):
     cumulative_reward_average_eg = results_eg[0]
     cumulative_reward_average_ts = results_ts[0]
     bandits_eg = results_eg[3]
+    reward_eg = results_eg[5]
+    reward_ts = results_ts[5]
+    regret_eg = results_eg[2][-1]
+    regret_ts = results_ts[2][-1]
 
+    
+    print(f"Total Reward Epsilon Greedy : {sum(reward_eg)}")
+    print(f"Total Reward Thomspon Sampling : {sum(reward_ts)}")
+        
+    print(" ")
+        
+    print(f"Total Regret Epsilon Greedy : {regret_eg}")
+    print(f"Total Regret Thomspon Sampling : {regret_ts}")
+        
 
+    plt.figure(figsize=(12, 5))
 
     ## LINEAR SCALE
+    plt.subplot(1, 2, 1)
     plt.plot(cumulative_reward_average_eg, label='Cumulative Average Reward Epsilon Greedy')
     plt.plot(cumulative_reward_average_ts, label='Cumulative Average Reward Thompson Sampling')
     plt.plot(np.ones(N) * max([b.p for b in bandits_eg]), label='Optimal Reward')
@@ -484,9 +499,10 @@ def comparison(N, results_eg, results_ts):
     plt.title(f"Comparison of Win Rate Convergence  - Linear Scale")
     plt.xlabel("Number of Trials")
     plt.ylabel("Estimated Reward")
-    plt.show()
+
 
     ## LOG SCALE
+    plt.subplot(1, 2, 2)
     plt.plot(cumulative_reward_average_eg, label='Cumulative Average Reward Epsilon Greedy')
     plt.plot(cumulative_reward_average_ts, label='Cumulative Average Reward Thompson Sampling')
     plt.plot(np.ones(N) * max([b.p for b in bandits_eg]), label='Optimal Reward')
@@ -495,6 +511,9 @@ def comparison(N, results_eg, results_ts):
     plt.xlabel("Number of Trials")
     plt.ylabel("Estimated Reward")
     plt.xscale("log")
+    
+    
+    plt.tight_layout()
     plt.show()
     
 
